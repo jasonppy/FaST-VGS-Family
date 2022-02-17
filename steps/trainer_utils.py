@@ -1,5 +1,4 @@
 
-import gc
 import torch
 import transformers
 import pickle
@@ -8,46 +7,6 @@ import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
-# memory management, from 
-# https://github.com/BlackHC/toma/blob/master/toma/torch_cuda_memory.py
-# and cpu_memory.py
-
-def is_oom_error(exception):
-    return (is_cuda_oom(exception) or is_cudnn_snafu(exception) or is_cpu_oom(exception) or is_cudnn_rnn_snafu(exception) or is_cudnn_conv_snafu(exception))
-
-def is_cuda_oom(exception):
-    return (isinstance(exception, RuntimeError)
-            and len(exception.args) == 1
-            and 'CUDA out of memory.' in exception.args[0])
-
-# lstm with too high sequence length throws this
-def is_cudnn_rnn_snafu(exception):
-    return (isinstance(exception, RuntimeError)
-            and len(exception.args) == 1
-            and 'cuDNN error: CUDNN_STATUS_EXECUTION_FAILED' in exception.args[0])
-
-def is_cudnn_conv_snafu(exception):
-    return (isinstance(exception, RuntimeError)
-            and len(exception.args) == 1
-            and 'Unable to find a valid cuDNN algorithm to run convolution' in exception.args[0])
-
-def is_cudnn_snafu(exception):
-    # For/because of https://github.com/pytorch/pytorch/issues/4107
-    return (isinstance(exception, RuntimeError)
-            and len(exception.args) == 1
-            and 'cuDNN error: CUDNN_STATUS_NOT_SUPPORTED.' in exception.args[0])
-
-def is_cpu_oom(exception):
-    return (isinstance(exception, RuntimeError)
-            and len(exception.args) == 1
-            and "DefaultCPUAllocator: can't allocate memory" in exception.args[0])
-
-def gc_cuda():
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-
-
 
 def print_model_info(model, print_model = False, print_params = True):
     if print_model:

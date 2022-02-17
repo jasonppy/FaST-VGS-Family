@@ -1,4 +1,5 @@
 # coding=utf-8
+# Copyright 2022 project FaST-VGS.
 # Copyright 2019 project LXRT
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 #

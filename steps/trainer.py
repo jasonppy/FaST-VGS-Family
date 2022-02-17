@@ -12,8 +12,6 @@ from models import fast_vgs
 from .utils import *
 from .trainer_utils import *
 from .bert_adam import BertAdam
-from apex.fp16_utils import *
-from apex import amp
 from logging import getLogger
 logger = getLogger(__name__)
 
