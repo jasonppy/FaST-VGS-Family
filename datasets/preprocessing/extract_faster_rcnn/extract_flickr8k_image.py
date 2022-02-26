@@ -199,37 +199,3 @@ if __name__ == '__main__':
     # Generate TSV files, noramlly do not need to modify
     args.caffemodel = os.path.join(args.model_root, args.caffemodel)
     generate_tsv(args.prototxt, args.caffemodel, image_ids, args.outfile)
-
-# mount /home/harwath/data/PlacesAudio_400k_distro/images to /workspace/images/, this is imgroot for reading images
-# mount /data1/scratch/places_hdf5_pyp/metadata to /workspace/metadata, this is where to read json files
-# docker run --gpus all -v /home/harwath/data/PlacesAudio_400k_distro/images:/workspace/images:ro -v /data1/scratch/places_hdf5_pyp/places_imgfeat:/workspace/out -v /home/pyp/TransDAVEnet/dataloaders:/workspace/features -v /data1/scratch/places_hdf5_pyp/metadata:/workspace/metadata -v /data1/scratch/exp_pyp/TransDAVEnet/faster_caffe:/workspace/models --rm -it airsplay/bottom-up-attention bash
-
-# json files looks like
-# {
-#     "image_base_path": "/home/harwath/data/PlacesAudio_400k_distro/images",
-#     "audio_base_path": "/home/harwath/data/PlacesAudio_400k_distro",
-#     "data": [
-#         {
-#             "uttid": "A2WQT33K6LD9Z5-GSUN_42132D45B3DF142544343E029936AC60",
-#             "speaker": "A2WQT33K6LD9Z5",
-#             "asr_text": "photos of showcasing a civilian own white and red air plane on a runway you can see the propeller spinning",
-#             "wav": "wavs/296/utterance_377328.wav",
-#             "image": "r/runway/gsun_42132d45b3df142544343e029936ac60.jpg"
-#         },
-#         {
-#             "uttid": "A2WQT33K6LD9Z5-GSUN_C9CFB47553F1594E4A60F3977C8AA75E",
-#             "speaker": "A2WQT33K6LD9Z5",
-#             "asr_text": "photograph showing a red commercial boat in a body of water is spraying water out of the other side of it while it's in the water",
-#             "wav": "wavs/298/utterance_293244.wav",
-#             "image": "h/harbor/gsun_c9cfb47553f1594e4a60f3977c8aa75e.jpg"
-#         },
-
-# take ['data'] and read it one by one
-# im particular, "image_id" will be "image"
-
-# we will save five split
-# train_2020.json -> train_2020.tsv
-# dev_seen_2020.json -> dev_seen_2020.tsv
-# dev_unseen_2020.json -> dev_unseen_2020.tsv
-# test_seen_2020.json -> test_seen_2020.tsv
-# test_unseen_2020.json -> test_unseen_2020.tsv

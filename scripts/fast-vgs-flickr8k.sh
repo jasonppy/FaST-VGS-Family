@@ -3,10 +3,10 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate my_env
 export CUDA_VISIBLE_DEVICES=2,3
 
-data_root=
-raw_audio_base_path=
-fb_w2v2_weights_fn=
-exp_dir=
+data_root=$1
+raw_audio_base_path=$2
+fb_w2v2_weights_fn=$3
+exp_dir=$4
 
 python \
 ../run_flickr8k.py \
