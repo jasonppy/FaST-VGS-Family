@@ -22,7 +22,7 @@ Code for papers:
 }
 ```
 ## 0. Clone repo and install requirements
-
+Please git clone this repo, and install the required libraries in `./requirements.txt`. Please note that we also need to install `fairseq==0.10.2`.
 
 ## 1. Model weights
 Will be up for downloading this week!
@@ -41,7 +41,7 @@ with open(f"{model_path}/args.pkl", "rb") as f:
 # load weights
 weights = torch.load(os.path,join(model_path, "best_bundle.pth"))
 
-# if want to use the entire model for e.g. speech-image retrieval
+# if want to use the entire model for e.g. speech-image retrieval (need to first follow section 3 below)
 dual_encoder = fast_vgs.DualEncoder(args)
 cross_encoder = fast_vgs.CrossEncoder(args)
 dual_encoder.load_state_dict(weights['dual_encoder'])
@@ -106,7 +106,12 @@ After the the features are extracted, we generate hdf5 files and some helper fil
 After this, we can generate hdf5 and other files directly used by the dataset scripts. Change the roots in `./datasets/generate_hdf5_coco_places_flickr8k_imgfeat.py` and run this file.
 
 ## 5. Training scripts
-The scripts in in `./scripts`
+need to first download w2v2 base weights
+```bash
+fb_w2v2_weights_dir="put the dir here"
+wget https://dl.fbaipublicfiles.com/fairseq/wav2vec/wav2vec_small.pt
+```
+Please find the scripts for training FaST-VGS and FaST-VGS+ in `./scripts`.
 
 
 ### Acknowledgement

@@ -1,0 +1,6 @@
+h5py==2.10.0
+numpy==1.20.3
+opencv_python==4.5.2.54
+SoundFile==0.10.3.post1
+torch==1.10.0
+tqdm==4.60.0

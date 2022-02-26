@@ -16,7 +16,7 @@ class ImageCaptionDataset(Dataset):
     @staticmethod
     def add_args(parser):
         parser.add_argument("--data_root", type=str, default="/data1/scratch/coco_pyp")
-        parser.add_argument("--raw_audio_base_path", type=str, default="/home/harwath/data/PlacesAudio_400k_distro")
+        parser.add_argument("--raw_audio_base_path", type=str, default="/data1/scratch/coco_pyp/SpokenCOCO")
         parser.add_argument("--img_feat_len", type=int, help="num of img feats we will use", choices=list(range(1,37)), default=36)
         parser.add_argument("--audio_feat_len", type=float, help="maximal audio length", default=8)
         parser.add_argument("--val_audio_feat_len", type=float, help="maximal audio length", default=10.)
