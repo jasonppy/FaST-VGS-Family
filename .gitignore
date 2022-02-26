@@ -8,5 +8,4 @@ logs/
 slurm*
 *.caffemodel
 *.ipynb
-*.png
 testing-*
