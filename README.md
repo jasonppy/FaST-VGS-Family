@@ -49,8 +49,8 @@ dual_encoder.load_state_dict(weights['dual_encoder'])
 cross_encoder.load_state_dict(weights['cross_encoder'])
 
 # if only want to use the audio branch for e.g. feature extraction for speech downstream tasks
-w2v2_model.Wav2Vec2Model_cls(args)
-w2v2_model.carefully_load_state_dict(weights['dual_encoder']) # will filter out weights that don't belong to w2v2
+model = w2v2_model.Wav2Vec2Model_cls(args)
+model.carefully_load_state_dict(weights['dual_encoder']) # will filter out weights that don't belong to w2v2
 ```
 Note that the input to the model should be normalized, somethings like:
 ```python
