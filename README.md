@@ -1,10 +1,11 @@
-Transformer-based visually grounded speech models:
+Code for Transformer-based visually grounded speech models:
+
 FaST-VGS:
 ![fast-vgs](./pics/archi1.png "FaST-VGS")
 FaST-VGS+:
 ![fast-vgs-plus](./pics/archi2.png "FaST-VGS+")
 
-Code for papers:
+Used in the following two papers:
 
 ```
 @inproceedings{peng2022fastvgs,
@@ -50,7 +51,16 @@ cross_encoder.load_state_dict(weights['cross_encoder'])
 # if only want to use the audio branch for e.g. feature extraction for speech downstream tasks
 w2v2_model.Wav2Vec2Model_cls(args)
 w2v2_model.carefully_load_state_dict(weights['dual_encoder']) # will filter out weights that don't belong to w2v2
-
+```
+Note that the input to the model should be normalized, somethings like:
+```python
+import SoundFile as sf
+import torch
+import numpy as np
+x, sr = sf.read(wav_path, dtype = 'float32')
+assert sr == 16000
+x_norm = (x - np.mean(x)) / np.std(x)
+x = torch.FloatTensor(x_norm) 
 ```
 
 *** For speech-image retrieval or training models from scratch, please follow the steps below ***
@@ -98,12 +108,12 @@ cd ${flickr8k_root}
 tar -xf flickr_audio.tar.gz
 ```
 
+Note that for SpokenCOCO, we (and the models we compared with in the FaST-VGS paper) use the Karpathy split, which can be downloaded online at e.g. [https://www.kaggle.com/shtvkumar/karpathy-splits](https://www.kaggle.com/shtvkumar/karpathy-splits). After downloading it use the scripts in `./datasets/preprocessing/unroll_coco.py` to unroll it into a flat list.
+
 ## 4. Image feature preprocessing
 We first extract Faster RCNN features using the Docker image released by Hao Tan. The instructions are at https://github.com/airsplay/lxmert#faster-r-cnn-feature-extraction, see section "Yet Another Example: Feature Extraction for MS COCO Images" for how the MSCOCO features are extracted. I put feature extraction scripts for Places and Flickr8k in `./datasets/preprocessing/extract_faster_rcnn` in this repo. Please mount this folder in Docker so it's easier for your to do Faster RCNN feature extraction.
 
-After the the features are extracted, we generate hdf5 files and some helper files for using dataset scripts in `./datasets`. before that, we unroll the json file of coco. simply put the coco_root in `./datasets/preprocessing/unroll_coco.py`
-
-After this, we can generate hdf5 and other files directly used by the dataset scripts. Change the roots in `./datasets/generate_hdf5_coco_places_flickr8k_imgfeat.py` and run this file.
+After the the features are extracted,  we can generate hdf5 and other files directly used by the dataset scripts. Change the roots in `./datasets/generate_hdf5_coco_places_flickr8k_imgfeat.py` and run this file.
 
 ## 5. Training scripts
 need to first download w2v2 base weights
