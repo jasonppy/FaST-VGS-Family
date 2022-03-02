@@ -26,7 +26,7 @@ Used in the following two papers:
 Please git clone this repo, and install the required libraries in `./requirements.txt`. Please note that we also need to install `fairseq==0.10.2`.
 
 ## 1. Model weights
-Will be up for downloading this week!
+Can be found [in this folder](https://drive.google.com/drive/folders/1AOSXSaEgP8vnBR3cjLI7k_IYsFk_uZD3?usp=sharing)
 
 ## 2. Use the trained model
 ```python
@@ -51,9 +51,8 @@ cross_encoder.load_state_dict(weights['cross_encoder'])
 # if only want to use the audio branch for e.g. feature extraction for speech downstream tasks
 model = w2v2_model.Wav2Vec2Model_cls(args)
 model.carefully_load_state_dict(weights['dual_encoder']) # will filter out weights that don't belong to w2v2
-```
-Note that the input to the model should be normalized, somethings like:
-```python
+
+# Note that the input to the model should be normalized
 import SoundFile as sf
 import torch
 import numpy as np
@@ -61,6 +60,10 @@ x, sr = sf.read(wav_path, dtype = 'float32')
 assert sr == 16000
 x_norm = (x - np.mean(x)) / np.std(x)
 x = torch.FloatTensor(x_norm) 
+
+# example of using the audio branch for feature extraction (model is a instance of w2v2_model.Wav2Vec2Model_cls), from layer 7 (0-based)
+model_out = model(source=x, padding_mask=None, mask=False, features_only=True, superb=False, tgt_layer=7)
+# model_out is a dictionary contains cls_token, layer_feats, padding_mask
 ```
 
 *** For speech-image retrieval or training models from scratch, please follow the steps below ***
@@ -70,7 +73,7 @@ x = torch.FloatTensor(x_norm)
 Note that for Places and flickr8k, we download the raw images and extract Faster RCNN regional features in the next step, for MSCOCO, we directly download the Faster RCNN feature distributed by [Hao Tan](https://www.cs.unc.edu/~airsplay/) in [LXMERT](https://github.com/airsplay/lxmert).
 
 ```bash
-data_root="root for store data"
+data_root="root for storing data"
 
 # COCO
 # images train2014 (17 GB) and val2014 (8 GB)

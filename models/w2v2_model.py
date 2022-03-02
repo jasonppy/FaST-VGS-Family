@@ -625,9 +625,10 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
             y = unmasked_features
             mask_indices = None
         # ############################################
-        cls_token_padding_mask = torch.zeros((padding_mask.shape[0],1)).to(padding_mask)
         x = torch.cat([self.cls_token.repeat(x.shape[0],1,1), x], dim=1)
-        padding_mask = torch.cat([cls_token_padding_mask, padding_mask], dim=1)
+        if padding_mask is not None:
+            cls_token_padding_mask = torch.zeros((padding_mask.shape[0],1)).to(padding_mask)
+            padding_mask = torch.cat([cls_token_padding_mask, padding_mask], dim=1)
         # ############################################
         if superb:
             all_feats = self.encoder(x, padding_mask=padding_mask, superb=True)
@@ -639,7 +640,8 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
         cls_token = layer_feats[:,0]
         features = features[:,1:]
         layer_feats = layer_feats[:,1:]
-        padding_mask = padding_mask[:,1:]
+        if padding_mask is not None:
+            padding_mask = padding_mask[:,1:]
         if features_only:
             return {"cls_token": cls_token, "layer_feats": layer_feats, "padding_mask": padding_mask}
 
