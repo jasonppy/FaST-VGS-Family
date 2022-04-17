@@ -725,6 +725,7 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
             k = k[7:] if k.startswith('module') else k
             k = k[22:] if k.startswith('w2v_encoder.w2v_model') else k
             k = k[11:] if k.startswith('w2v2_model') else k
+            k = k.replace("conv1_trm1_trm3.","")
             if k in new_states and new_states[k].size() == v.size():
                 new_states[k] = v
                 loaded_keys.append(k)

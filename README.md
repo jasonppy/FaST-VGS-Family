@@ -33,14 +33,15 @@ Can be found [in this folder](https://drive.google.com/drive/folders/1AOSXSaEgP8
 import sys
 import os
 import pickle
-sys.path.append("the path to FaST-VGS-Family")
+# sys.path.append("the path to FaST-VGS-Family") # might not need this depends on your working dir
 model_path = "path to weights and args you download in 1."
+import torch
 from models import fast_vgs, w2v2_model
 # load args
 with open(f"{model_path}/args.pkl", "rb") as f:
     args = pickle.load(f)
 # load weights
-weights = torch.load(os.path,join(model_path, "best_bundle.pth"))
+weights = torch.load(os.path.join(model_path, "best_bundle.pth"))
 
 # if want to use the entire model for e.g. speech-image retrieval (need to first follow section 3 below)
 dual_encoder = fast_vgs.DualEncoder(args)
@@ -49,6 +50,7 @@ dual_encoder.load_state_dict(weights['dual_encoder'])
 cross_encoder.load_state_dict(weights['cross_encoder'])
 
 # if only want to use the audio branch for e.g. feature extraction for speech downstream tasks
+# if you are loading fast-vgs features, it will say that weights of layer 8-11 (0-based) are not seed_dir, that's fine, because fast-vgs only has first 8 layers (i.e. layer 0-7) of w2v2 model, last four layers will be randomly initialized layers
 model = w2v2_model.Wav2Vec2Model_cls(args)
 model.carefully_load_state_dict(weights['dual_encoder']) # will filter out weights that don't belong to w2v2
 
@@ -59,7 +61,7 @@ import numpy as np
 x, sr = sf.read(wav_path, dtype = 'float32')
 assert sr == 16000
 x_norm = (x - np.mean(x)) / np.std(x)
-x = torch.FloatTensor(x_norm) 
+x = torch.FloatTensor(x_norm).unsqueeze(0)
 
 # example of using the audio branch for feature extraction (model is a instance of w2v2_model.Wav2Vec2Model_cls), from layer 7 (0-based)
 model_out = model(source=x, padding_mask=None, mask=False, features_only=True, superb=False, tgt_layer=7)
