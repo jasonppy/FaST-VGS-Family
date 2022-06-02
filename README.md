@@ -67,8 +67,8 @@ x = torch.FloatTensor(x_norm).unsqueeze(0)
 model_out = model(source=x, padding_mask=None, mask=False, features_only=True, superb=False, tgt_layer=7)
 # model_out is a dictionary contains cls_token, layer_feats, padding_mask
 ```
-
-*** For speech-image retrieval or training models from scratch, please follow the steps below ***
+*to get zerospeech2021 results of FaST-VGS+, use phonetic: Trm1 layer 6, lexical: Trm1 layer 8, syntactic Trm1 layer 8, semantic Trm2 layer 1 (layer number starts from 1)
+**For speech-image retrieval or training models from scratch, please follow the steps below**
 ## 3. Download data
 
 ### Image
