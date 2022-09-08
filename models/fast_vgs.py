@@ -236,7 +236,7 @@ class DualEncoder(nn.Module):
         cls_token_coarse = self.visual_cls_token_proj_coarse(visual_feats[:,0])
         return visual_feats, cls_token_coarse
 
-    def forward_audio(self, audio_feats, audio_attention_mask, test=False, target_list = None):
+    def forward_audio(self, audio_feats, audio_attention_mask, test=False):
         if test:
             self.conv1_trm1_trm3.eval()
             trm13_out = self.conv1_trm1_trm3(audio_feats, padding_mask=audio_attention_mask, mask=False, features_only=True, tgt_layer=self.args.layer_use)
@@ -270,7 +270,7 @@ class DualEncoder(nn.Module):
         cls_token_coarse = self.trm2_proj(audio_feats[:,0])
         return audio_feats, cls_token_coarse, extended_audio_attention_mask, losses
 
-    def forward_libri(self, audio_feats, audio_attention_mask, target_list = None):
+    def forward_libri(self, audio_feats, audio_attention_mask):
         trm13_out = self.conv1_trm1_trm3(audio_feats, padding_mask=audio_attention_mask, mask=True)
         losses = w2v2_loss(self.conv1_trm1_trm3, trm13_out, self.args, suffix="libri")
         return losses
@@ -285,19 +285,18 @@ class DualEncoder(nn.Module):
         visual_attention_mask=None, # this is not used, cause we always use all 36 features
         test = False,
         inter = -1,
-        forward_libri = False,
-        target_list = None
+        forward_libri = False
     ):
         if forward_libri:
-            libri_loss = self.forward_libri(audio_feats, attention_mask, target_list)
+            libri_loss = self.forward_libri(audio_feats, attention_mask)
             return libri_loss
         elif test:
             visual_feats, visual_cls = self.forward_image(visual_feats, visual_pos, visual_attention_mask)
-            audio_feats, audio_cls, extended_audio_attention_mask, _ = self.forward_audio(audio_feats, attention_mask, test,target_list=target_list)
+            audio_feats, audio_cls, extended_audio_attention_mask, _ = self.forward_audio(audio_feats, attention_mask, test)
             return audio_feats, audio_cls, extended_audio_attention_mask, visual_feats, visual_cls
         else:
             visual_feats, visual_cls= self.forward_image(visual_feats, visual_pos, visual_attention_mask)
-            audio_feats, audio_cls, extended_audio_attention_mask, losses = self.forward_audio(audio_feats, attention_mask,target_list=target_list)
+            audio_feats, audio_cls, extended_audio_attention_mask, losses = self.forward_audio(audio_feats, attention_mask)
             return audio_feats, audio_cls, extended_audio_attention_mask, visual_feats, visual_cls, losses
 
     def carefully_load_state_dict(self, states):

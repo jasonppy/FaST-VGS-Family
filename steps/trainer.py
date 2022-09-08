@@ -53,7 +53,7 @@ class Trainer:
         logger.info(f"batch size: {self.args.batch_size}")
     
     def forward(self, batch):
-        audio_feats, audio_cls, extended_audio_attention_mask, visual_feats, visual_cls, losses = self.dual_encoder(audio_feats = batch['audio'], attention_mask = batch['audio_attention_mask'], visual_feats = batch['visual_feats'], visual_pos = batch['visual_pos'], target_list = batch['label'])
+        audio_feats, audio_cls, extended_audio_attention_mask, visual_feats, visual_cls, losses = self.dual_encoder(audio_feats = batch['audio'], attention_mask = batch['audio_attention_mask'], visual_feats = batch['visual_feats'], visual_pos = batch['visual_pos'])
         coarse_cross_relationship_score_matrix = visual_cls @ audio_cls.transpose(0,1)
         losses['coarse_matching_loss'] = fast_vgs.Margin_InfoNCE_loss(coarse_cross_relationship_score_matrix, margin=self.args.margin, img_id = batch['img_id'])
         B = visual_feats.shape[0]
@@ -95,13 +95,12 @@ class Trainer:
                         "visual_pos": batch['boxes'].to(self.device),
                         "audio": batch['audio'].to(self.device),
                         "audio_attention_mask": batch['audio_attention_mask'].to(self.device),
-                        "img_id": batch['img_id'],
-                        "label": batch['label']
+                        "img_id": batch['img_id']
                         }
 
                 losses = self.forward(cur_batch)
                 if self.use_libri_loss:
-                    losses.update(self.dual_encoder(audio_feats = libri_batch['audio'].to(self.device), attention_mask = libri_batch['audio_attention_mask'].to(self.device), target_list = libri_batch['label'], forward_libri=True))
+                    losses.update(self.dual_encoder(audio_feats = libri_batch['audio'].to(self.device), attention_mask = libri_batch['audio_attention_mask'].to(self.device), forward_libri=True))
 
                 for key in losses:
                     if key in self.meters:
@@ -391,7 +390,7 @@ class Trainer:
                 self.dual_encoder.eval()
                 n = len(batch['audio'])
                 N += n
-                losses = self.dual_encoder(audio_feats = batch['audio'].to(self.device), attention_mask = batch['audio_attention_mask'].to(self.device), target_list=batch['label'], forward_libri=True)
+                losses = self.dual_encoder(audio_feats = batch['audio'].to(self.device), attention_mask = batch['audio_attention_mask'].to(self.device),  forward_libri=True)
                 total_loss += losses['libri_w2v2_loss'].mean()*n
         cur_val_loss = (total_loss/N).item()
         self.writer.add_scalar("libri_val_loss", cur_val_loss, self.progress['num_updates'])

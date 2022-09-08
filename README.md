@@ -120,6 +120,10 @@ We first extract Faster RCNN features using the Docker image released by Hao Tan
 
 After the the features are extracted,  we can generate hdf5 and other files directly used by the dataset scripts. Change the roots in `./datasets/generate_hdf5_coco_places_flickr8k_imgfeat.py` and run this file.
 
+Please run `./datasets/preprocessing/img_id2ordered_coco_places_flickr8k.py` with the path in the script changed based on your path, to generate `*_imgid2ordered_indices.pkl` necessary for `*_dataset.py` files.
+
+In addition, if you are using SpokenCOCO, please also run `./datasets/preprocessing/unroll_coco.py` with the your path to generate `*_unrolled_karpathy.json` from the original data json file.
+
 ## 5. Training scripts
 need to first download w2v2 base weights
 ```bash
