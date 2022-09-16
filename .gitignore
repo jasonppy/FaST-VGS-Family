@@ -9,3 +9,4 @@ slurm*
 *.caffemodel
 *.ipynb
 testing-*
+*tsv*

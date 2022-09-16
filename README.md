@@ -132,6 +132,10 @@ wget https://dl.fbaipublicfiles.com/fairseq/wav2vec/wav2vec_small.pt
 ```
 Please find the scripts for training FaST-VGS and FaST-VGS+ in `./scripts`.
 
+Note that for FaST-VGS+ training, you need to have [LibriSpeech](https://www.openslr.org/12) downloaded. And you need to generate `train.tsv` and `valid.tsv` that contains file path to all the train and validation files, this is the same as the requirement in wav2vec2 [data manifest preparation step](https://github.com/facebookresearch/fairseq/blob/main/examples/wav2vec/README.md#prepare-training-data-manifest). To ease this process, I have uploaded my `.tsv` files [in this folder](https://drive.google.com/drive/folders/1AOSXSaEgP8vnBR3cjLI7k_IYsFk_uZD3?usp=sharing). The first line of the tsv is the root of audio files, and rest of the lines are the path to each audio file (I used '/' as the root in these tsv files)
+
+Please generate your own tsv files accordingly, and put them at `libri_fn_root`, and specify it when you run `fast-vgs-plus-coco.sh` in `./scripts`
+
 
 ### Acknowledgement
 Model code uses the [wav2vec2 code](https://github.com/pytorch/fairseq/blob/main/examples/wav2vec/README.md) from [fairseq](https://github.com/pytorch/fairseq) and [LXMERT code](https://github.com/airsplay/lxmert) from [Hao Tan](https://www.cs.unc.edu/~airsplay/).

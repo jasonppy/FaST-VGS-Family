@@ -102,7 +102,7 @@ def verify_label_lengths(
 class LibriDataset(Dataset):
     @staticmethod
     def add_args(parser):
-        parser.add_argument("--libri_fn_root", type=str, default="/data3/scratch/pyp/MAE/data/libri", help="from fairseq mae simple kmeans")
+        parser.add_argument("--libri_fn_root", type=str, default="/data3/scratch/pyp/exp_pyp/libri/", help="from fairseq mae simple kmeans")
         parser.add_argument("--libri_max_seq_len", type=float, default=10.)
         parser.add_argument("--libri_val_bzs", type=int, default=64)
         parser.add_argument("--sample_rate", type=int, default=16000)

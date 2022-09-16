@@ -34,7 +34,7 @@ from fairseq.modules import (
 from fairseq.modules.transformer_sentence_encoder import init_bert_params
 from fairseq.utils import buffered_arange
 from fairseq.data.data_utils import compute_mask_indices
-from .gumbel_quantizer import GumbelVectorQuantizer
+from .gumbel_quantizer import GumbelVectorQuantizer, GumbelVectorQuantizer_trim_mask
 
 class Wav2Vec2Model_cls(BaseFairseqModel):
     @staticmethod
@@ -344,12 +344,17 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
         parser.add_argument(
             "--return_code_index", action="store_true", default=False, help="return the code index"
         )
-        
+        parser.add_argument(
+            "--trim_mask", action="store_true", default=False
+        )
 
     def __init__(self, args):
         super().__init__()
         self.args = args
-        Quantizer = GumbelVectorQuantizer
+        if self.args.trim_mask:
+            Quantizer = GumbelVectorQuantizer_trim_mask
+        else:
+            Quantizer = GumbelVectorQuantizer
         self.Compute_Mask_Indices = compute_mask_indices
         feature_enc_layers = eval(args.conv_feature_layers)
         self.embed = feature_enc_layers[-1][0]
@@ -463,6 +468,7 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
                 min_masks=2,
                 no_overlap=self.no_mask_overlap,
                 min_space=self.mask_min_space,
+                require_same_masks=True if self.args.trim_mask else False
             )
             mask_indices = torch.from_numpy(mask_indices).to(x.device)
             x[mask_indices] = self.mask_emb.to(x) # to x to avoid fp16 problem
@@ -479,6 +485,7 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
                 self.mask_channel_other,
                 no_overlap=self.no_mask_channel_overlap,
                 min_space=self.mask_channel_min_space,
+                require_same_masks=True if self.args.trim_mask else False
             )
             mask_channel_indices = (
                 torch.from_numpy(mask_channel_indices)
@@ -550,6 +557,63 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
         )  # to NxBxTxC
         return negs, neg_idxs
 
+    def sample_negatives_trim_mask(self, y, num):
+
+        if self.n_negatives == 0 and self.cross_sample_negatives == 0:
+            return y.new(0)
+
+        bsz, tsz, fsz = y.shape
+        y = y.view(-1, fsz)  # BTC => (BxT)C
+
+        cross_high = tsz * bsz
+        high = tsz
+        with torch.no_grad():
+            assert high > 1, f"{bsz,tsz,fsz}"
+
+            if self.n_negatives > 0:
+                tszs = (
+                    buffered_arange(num)
+                    .unsqueeze(-1)
+                    .expand(-1, self.n_negatives)
+                    .flatten()
+                )
+
+                neg_idxs = torch.randint(
+                    low=0, high=high - 1, size=(bsz, self.n_negatives * num)
+                )
+                neg_idxs[neg_idxs >= tszs] += 1
+
+            if self.cross_sample_negatives > 0:
+                tszs = (
+                    buffered_arange(num)
+                    .unsqueeze(-1)
+                    .expand(-1, self.cross_sample_negatives)
+                    .flatten()
+                )
+
+                cross_neg_idxs = torch.randint(
+                    low=0,
+                    high=cross_high - 1,
+                    size=(bsz, self.cross_sample_negatives * num),
+                )
+                cross_neg_idxs[cross_neg_idxs >= tszs] += 1
+
+        if self.n_negatives > 0:
+            for i in range(1, bsz):
+                neg_idxs[i] += i * high
+        else:
+            neg_idxs = cross_neg_idxs
+
+        if self.cross_sample_negatives > 0 and self.n_negatives > 0:
+            neg_idxs = torch.cat([neg_idxs, cross_neg_idxs], dim=1)
+
+        negs = y[neg_idxs.view(-1)]
+        negs = negs.view(
+            bsz, num, self.n_negatives + self.cross_sample_negatives, fsz
+        ).permute(
+            2, 0, 1, 3
+        )  # to NxBxTxC
+        return negs, neg_idxs
 
     def compute_preds(self, x, y, negatives):
         # negatives: NxBxTxC
@@ -568,6 +632,22 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
 
         return logits
 
+    def compute_preds_trim_mask(self, x, y, negatives):
+        # negatives: NxBxTxC
+        # y is target: BxTxC
+        # x is prediction: BxTxC
+        neg_is_pos = (y == negatives).all(-1)
+        y = y.unsqueeze(0)
+        targets = torch.cat([y, negatives], dim=0) # (N+1)xBxTxC
+
+        logits = torch.cosine_similarity(x.float(), targets.float(), dim=-1).type_as(x) # this gives [N+1, B, T]
+
+        logits /= self.logit_temp
+
+        if neg_is_pos.any():
+            logits[1:][neg_is_pos] = float("-inf")
+
+        return logits
 
     def forward(self, source, padding_mask=None, mask=True, features_only=False, superb=False, tgt_layer=None):
 
@@ -617,7 +697,10 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
         if mask:
             x, mask_indices = self.apply_mask(features, padding_mask) # x will be masked, note that mask is some learned embedding (768 dim), not zero!
             if mask_indices is not None:
-                y = unmasked_features[mask_indices].view(unmasked_features.size(0), -1, unmasked_features.size(-1))
+                if self.args.trim_mask:
+                    y = unmasked_features[mask_indices].view(unmasked_features.size(0), -1, unmasked_features.size(-1))
+                else:
+                    y = unmasked_features[mask_indices].view(-1, unmasked_features.size(-1))
             else:
                 y = unmasked_features
         else:
@@ -658,7 +741,10 @@ class Wav2Vec2Model_cls(BaseFairseqModel):
             if self.negatives_from_everywhere:
                 raise NotImplementedError
             else:
-                negs, _ = self.sample_negatives(y, y.size(1))
+                if self.args.trim_mask:
+                    negs, _ = self.sample_negatives_trim_mask(y, y.size(1))
+                else:
+                    negs, _ = self.sample_negatives(y, mask_indices) # negs: [T_pred1+T_pred2+...+T_predB, D] 
                 
             if self.codebook_negatives > 0:
                 raise NotImplementedError

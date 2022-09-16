@@ -7,6 +7,7 @@ data_root=$1
 raw_audio_base_path=$2
 fb_w2v2_weights_fn=$3
 exp_dir=$4
+libri_fn_root=$5
 
 python \
 ../run_spokencoco.py \
@@ -14,6 +15,7 @@ python \
 --raw_audio_base_path ${raw_audio_base_path} \
 --fb_w2v2_weights_fn ${fb_w2v2_weights_fn} \
 --exp_dir ${exp_dir} \
+--libri_fn_root ${libri_fn_root} \
 --batch_size 64 \
 --val_batch_size 100 \
 --val_cross_batch_size 8000 \
