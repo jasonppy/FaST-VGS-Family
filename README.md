@@ -23,7 +23,7 @@ Used in the following two papers:
 }
 ```
 ## 0. Clone repo and install requirements
-Please git clone this repo, and install the required libraries in `./requirements.txt`. Please note that we also need to install `fairseq==0.10.2`.
+Please git clone this repo, and install the required libraries in `./requirements.txt`. Please note that we also need to install `fairseq==0.12.2` (versions above might also work)
 
 ## 1. Model weights
 Can be found [in this folder](https://drive.google.com/drive/folders/1AOSXSaEgP8vnBR3cjLI7k_IYsFk_uZD3?usp=sharing)
@@ -138,4 +138,4 @@ Please generate your own tsv files accordingly, and put them at `libri_fn_root`,
 
 
 ### Acknowledgement
-Model code uses the [wav2vec2 code](https://github.com/pytorch/fairseq/blob/main/examples/wav2vec/README.md) from [fairseq](https://github.com/pytorch/fairseq) and [LXMERT code](https://github.com/airsplay/lxmert) from [Hao Tan](https://www.cs.unc.edu/~airsplay/).
+Model code uses the [wav2vec2 code](https://github.com/pytorch/fairseq/blob/main/examples/wav2vec/README.md) from [fairseq](https://github.com/pytorch/fairseq) and [LXMERT code](https://github.com/airsplay/lxmert) from [Hao Tan](https://www.cs.unc.edu/~airsplay/). And than thank [Khazar Khorrami](https://fi.linkedin.com/in/khazar-khorrami-baa48bb3) for helping me debug this GitHub repo.

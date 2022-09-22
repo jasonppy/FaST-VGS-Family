@@ -23,7 +23,10 @@ from torch import nn
 
 
 def w2v2_loss(model, w2v2_out, args, suffix):
-    x = w2v2_out['features'][w2v2_out['mask_indices']].view(w2v2_out['features'].size(0), -1, w2v2_out['features'].size(-1))
+    if args.trim_mask:
+        x = w2v2_out['features'][w2v2_out['mask_indices']].view(w2v2_out['features'].size(0), -1, w2v2_out['features'].size(-1))
+    else:
+        x = w2v2_out['features'][w2v2_out['mask_indices']].view(-1, args.encoder_embed_dim)
     y = w2v2_out["masked_target"]
     negs = w2v2_out['negs']
     if model.target_glu:
